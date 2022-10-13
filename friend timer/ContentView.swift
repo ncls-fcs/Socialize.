@@ -1,0 +1,85 @@
+//
+//  ContentView.swift
+//  friend timer
+//
+//  Created by Nicolas Fuchs on 09.10.22.
+//
+
+import SwiftUI
+
+struct ContentView: View {
+    
+    @EnvironmentObject var modelData: ModelData
+    
+    @ObservedObject var newPerson: NewPerson = NewPerson()
+    
+    @State private var isPresentingAddView = false
+    
+    func delete(at offsets: IndexSet) {
+        modelData.friends.remove(atOffsets: offsets)
+    }
+    
+    func addNewPerson(name:String, lastContact:Date = Date.now) {
+        //add a new friend struct with a given name and given date; if no date is provided it uses the current date
+        modelData.friends.append(Person(name:name, lastContact:lastContact))
+        modelData.friends.sort {
+            $0.lastContact < $1.lastContact
+        }
+    }
+
+    
+    var body: some View {
+        NavigationView {
+            
+            List {
+                ForEach(modelData.friends) {
+                    friend in FriendRow(friend: friend)
+                }
+                .onDelete(perform: delete)
+            }
+            .navigationTitle("Time since last meetin")
+            .toolbar {
+                EditButton()
+                Spacer()
+                Button(action: {
+                    isPresentingAddView = true
+                }){
+                    Image(systemName: "plus")
+                }
+                Spacer()
+            }
+            
+            
+            .sheet(isPresented: $isPresentingAddView) {
+                NavigationView {
+                    AddNewPersonView(newPerson: newPerson)
+                        .navigationTitle($newPerson.newPersonName)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cancel") {
+                                    newPerson.clear()
+                                    isPresentingAddView = false
+                                }
+                            }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Add") {
+                                    addNewPerson(name: newPerson.newPersonName, lastContact: newPerson.date)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
+                                    
+                                    isPresentingAddView = false
+                                    
+                                    newPerson.clear()   //Gibt das Modell newPerson frei
+                                }
+                            }
+                        }
+                }
+            }
+        }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(ModelData())
+    }
+}
