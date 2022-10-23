@@ -5,14 +5,23 @@
 //  Created by Nicolas Fuchs on 09.10.22.
 //
 
+#warning("TODO: Add Data Persistence (JSON)")
+#warning("TODO: Add Priority to Friends")
+
 import Foundation
 import SwiftUI
 import Combine
 
-struct Person: Identifiable {
-    let id = UUID()
-    var name: String = ""
-    var lastContact: Date = Date.now
+struct Person: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    var lastContact: Date
+    
+    init(id: UUID = UUID(), name: String = "", lastContact: Date = Date.now) {
+        self.id = id
+        self.name = name
+        self.lastContact = lastContact
+    }
 }
 
 final class ModelData: ObservableObject {

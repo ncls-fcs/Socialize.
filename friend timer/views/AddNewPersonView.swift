@@ -5,6 +5,8 @@
 //  Created by Nicolas Fuchs on 10.10.22.
 //
 
+#warning("TODO: Add Priority-Option to newPerson")
+
 import SwiftUI
 import Combine
 
