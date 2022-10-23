@@ -4,7 +4,7 @@
 //
 //  Created by Nicolas Fuchs on 09.10.22.
 //
-#warning("TODO: Add Nofication System for overdue Meetings")
+#warning("TODO: Add NotificationHandler Caller for overdue meetings")
 
 import SwiftUI
 
