@@ -26,6 +26,53 @@ struct Person: Identifiable, Codable {
 
 final class ModelData: ObservableObject {
     @Published var friends: [Person] = []
+    
+    //function for generating URL for "friends.data"
+    private static func fileURL() throws -> URL {
+        try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent("friends.data")
+    }
+    
+    //function for loading data
+    static func load(completion: @escaping (Result<[Person], Error>)->Void) {
+        DispatchQueue.global(qos: .background).async {
+            do {
+                let fileURL = try fileURL()
+                guard let file = try? FileHandle(forReadingFrom: fileURL) else {
+                    DispatchQueue.main.async {
+                        completion(.success([]))
+                    }
+                    return
+                }
+                let friendsArray = try JSONDecoder().decode([Person].self, from: file.availableData)
+                DispatchQueue.main.async {
+                    completion(.success(friendsArray))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    //function for saving data through a completion handler
+    static func save(friends: [Person], completion: @escaping (Result<Int, Error>)->Void){
+        DispatchQueue.global(qos: .background).async {
+            do {
+                let data = try JSONEncoder().encode(friends)
+                let fileURL = try fileURL()
+                try data.write(to: fileURL)
+                DispatchQueue.main.async {
+                    completion(.success(friends.count))
+                }
+            }catch{
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
 }
 
 

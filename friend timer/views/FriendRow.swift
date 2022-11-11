@@ -22,6 +22,6 @@ struct FriendRow: View {
 
 struct FriendRow_Previews: PreviewProvider {
     static var previews: some View {
-        FriendRow(friend: ModelData().friends[0])
+        FriendRow(friend: friendsSamples[1])
     }
 }

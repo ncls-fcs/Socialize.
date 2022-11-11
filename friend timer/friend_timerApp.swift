@@ -16,8 +16,33 @@ struct friend_timerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(){
+                ModelData.save(friends: modelData.friends) { result in
+                    switch result {
+                    case .failure(let error):
+                        fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
+                    case .success(let savedPersonCount):
+                        print("Saved "+String(savedPersonCount)+" Entities to file")
+                    }
+                }
+            }
                 .environmentObject(modelData)
+                .onAppear{
+                    ModelData.load { result in
+                        switch result {
+                        case .failure(let error):
+                            fatalError("Error in loading modelData Array from file "+error.localizedDescription)
+                        case .success(let personArrayFromFile):
+                            
+                            print("Loading completed: ")
+                            for person in personArrayFromFile {
+                                print(person)
+                            }
+                            
+                            modelData.friends = personArrayFromFile
+                        }
+                    }
+                }
         }
     }
 }

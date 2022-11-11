@@ -15,6 +15,10 @@ struct ContentView: View {
     
     @State private var isPresentingAddView = false
     
+    @Environment(\.scenePhase) private var scenePhase   //operational State of the app gets saved to scenePhase from @Environment Property
+    
+    let saveAction: () -> Void
+    
     func delete(at offsets: IndexSet) {
         modelData.friends.remove(atOffsets: offsets)
     }
@@ -37,7 +41,7 @@ struct ContentView: View {
                 }
                 .onDelete(perform: delete)
             }
-            .navigationTitle("Time since last meetin")
+            .navigationTitle("Last met")
             .toolbar {
                 EditButton()
                 Spacer()
@@ -73,13 +77,18 @@ struct ContentView: View {
                         }
                 }
             }
+            .onChange(of: scenePhase) { phase in
+                if phase == .inactive {
+                    saveAction()
+                }
+            }
         }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(saveAction:{})
             .environmentObject(ModelData())
     }
 }
