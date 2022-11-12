@@ -12,10 +12,18 @@ struct FriendRow: View {
     var friend: Person
     
     var body: some View {
-        HStack {
-            Text(friend.name)
+        HStack{
+            VStack(alignment: .leading) {
+                Text(friend.name)
+                    .font(.headline)
+                Text(formatDate(date:friend.lastContact))
+                    .font(.subheadline)
+            }
             Spacer()
-            Text(formatDate(date:friend.lastContact)).bold()
+            if (DateInterval(start: friend.lastContact, end: Date.now) > DateInterval(start: friend.lastContact, duration: 604800)) {
+                Image(systemName: "clock.badge.exclamationmark")
+                    .foregroundColor(Color(red: 1.0, green: 0.6, blue: 0.2, opacity: 1.0))
+            }
         }
     }
 }
