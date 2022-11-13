@@ -15,11 +15,13 @@ struct Person: Identifiable, Codable {
     let id: UUID
     var name: String
     var lastContact: Date
+    var priority: Int
     
-    init(id: UUID = UUID(), name: String = "", lastContact: Date = Date.now) {
+    init(id: UUID = UUID(), name: String = "", lastContact: Date = Date.now, priority: Int = 0) {
         self.id = id
         self.name = name
         self.lastContact = lastContact
+        self.priority = priority
     }
 }
 

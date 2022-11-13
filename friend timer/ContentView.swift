@@ -5,7 +5,7 @@
 //  Created by Nicolas Fuchs on 09.10.22.
 //
 
-#warning("Add refresher for time intervall of 'lastContact'")
+#warning("Implementation of refresher for time intervall of 'lastContact' needs to be changed to one where the original Person object gets altered and not deleted and a new one with the date set to now inserted")
 
 import SwiftUI
 
@@ -25,9 +25,9 @@ struct ContentView: View {
         modelData.friends.remove(atOffsets: offsets)
     }
     
-    func addNewPerson(name:String, lastContact:Date = Date.now) {
+    func addNewPerson(name:String, lastContact:Date = Date.now, priority:Int) {
         //add a new friend struct with a given name and given date; if no date is provided it uses the current date
-        modelData.friends.append(Person(name:name, lastContact:lastContact))
+        modelData.friends.append(Person(name:name, lastContact:lastContact, priority:priority))
         modelData.friends.sort {
             $0.lastContact < $1.lastContact
         }
@@ -72,14 +72,35 @@ struct ContentView: View {
                                 }
                                 ToolbarItem(placement: .confirmationAction) {
                                     Button("Add") {
-                                        addNewPerson(name: newPerson.newPersonName, lastContact: newPerson.date)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
+                                        addNewPerson(name: newPerson.newPersonName, lastContact: newPerson.date, priority: newPerson.priority)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
                                         
                                         isPresentingAddView = false
                                         
-                                        //Notification scheduling
-                                        addNotification(title: newPerson.newPersonName, body: "Go meet with your mate, it´s been 20 seconds", notificationTime: Date(timeIntervalSinceNow: 20))
+                                        //Requesting notification permission
+                                        let center = UNUserNotificationCenter.current()
+                                        center.requestAuthorization(options: [.alert, .badge, .sound]) {granted, error in
+                                            if let error = error {
+                                                print(error.localizedDescription)
+                                            }
+                                        }
                                         
-                                        
+                                        //getting notification permissions and settings
+                                        center.getNotificationSettings { settings in
+                                            guard settings.authorizationStatus == .authorized else {
+                                                return
+                                            }
+                                            var notificationTimeInterval: Double
+                                            switch newPerson.priority {
+                                            case 0: notificationTimeInterval = 302400
+                                            case 1: notificationTimeInterval = 604800
+                                            case 2: notificationTimeInterval = 907200
+                                            default:
+                                                notificationTimeInterval = 20
+                                            }
+                                            //Notification scheduling
+                                            addNotification(title: newPerson.newPersonName, body: "Go meet with your mate, it´s been \(Int(notificationTimeInterval/604800)) weeks", timeInterval: notificationTimeInterval)
+                                        }
+  
                                         newPerson.clear()   //Gibt das Modell newPerson frei
                                     }
                                 }

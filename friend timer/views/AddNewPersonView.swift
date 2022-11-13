@@ -29,6 +29,11 @@ struct AddNewPersonView: View {
                     DatePicker(selection: $newPerson.date, in: datesUntilNow ,label: {Text("Date of last meeting:") })
                         .datePickerStyle(.graphical)
                 }
+                Picker(selection: $newPerson.priority, label: Text("Priority")) {
+                    Text("Low").tag(0)
+                    Text("Medium").tag(1)
+                    Text("High").tag(2)
+                }
                 
             }
             

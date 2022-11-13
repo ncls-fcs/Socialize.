@@ -31,7 +31,7 @@ struct friend_timerApp: App {
                     ModelData.load { result in
                         switch result {
                         case .failure(let error):
-                            fatalError("Error in loading modelData Array from file "+error.localizedDescription)
+                            fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
                         case .success(let personArrayFromFile):
                             
                             print("Loading completed: ")
