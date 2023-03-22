@@ -9,20 +9,29 @@ import Foundation
 import SwiftUI
 
 struct FriendRow: View {
-    var friend: Person
+    @StateObject var friend: Person
     @State var showAlert: Bool = false
     
     @EnvironmentObject var modelData: ModelData
     
+    @StateObject var lastContactTimer = UpdaterViewModel() //Updates View every 60 second
+    
     func setLastContactToNow(id: UUID) {
-        var tempPerson:Person?
+        /*Takes in the id of a Person of which the lastContact property should be set to the Date "now"*/
         
-        tempPerson = modelData.friends.remove(at: modelData.friends.firstIndex(where: {$0.id == id})!)
-        tempPerson?.lastContact = Date.now
-        modelData.friends.append(tempPerson!)
+        //Iterating over every Person in the friends array to find the one with the id where looking for, then setting its lastContact property to the Date "now"
+        for person in modelData.friends {
+            if person.id == id {
+                person.lastContact = Date.now
+                break
+            }
+        }
+        
+        //sorting Persons from lastContact again, as this property could have changed
         modelData.friends.sort {
             $0.lastContact < $1.lastContact
         }
+    
     }
     
     var body: some View {
@@ -33,6 +42,7 @@ struct FriendRow: View {
                         .font(.headline)
                     Text(formatDate(date:friend.lastContact))
                         .font(.subheadline)
+#warning("TODO: Live Update the date; (maybe: when SystemTime changes (a second went by) reload view)")
                 }
                 Spacer()
                 if (DateInterval(start: friend.lastContact, end: Date.now) > DateInterval(start: friend.lastContact, duration: 604800)) {
@@ -48,6 +58,7 @@ struct FriendRow: View {
             }
             Button("Yes"){
                 setLastContactToNow(id: friend.id)
+                scheduleNotification(Person: friend)
             }
         }
 
@@ -56,6 +67,7 @@ struct FriendRow: View {
 
 struct FriendRow_Previews: PreviewProvider {
     static var previews: some View {
-        FriendRow(friend: friendsSamples[1])
+        FriendRow(friend: friendsSamples[0])
+        //FriendRow(friend: Person(name: "Test1", lastContact: Date.now, priority: 0))
     }
 }

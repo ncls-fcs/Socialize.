@@ -26,3 +26,37 @@ func addNotification(title:String, body:String, timeInterval:Double){
     notificationCenter.add(request)
 }
     
+func configureNotificationTime(Person: Person) -> Double{
+    //takes in priority of a newPerson and returns a double time NotificationInterval
+    
+    var notificationTimeInterval: Double
+    switch Person.priority {
+    //case 0: notificationTimeInterval = 302400
+    //case 1: notificationTimeInterval = 604800
+    //case 2: notificationTimeInterval = 907200
+    default:
+        notificationTimeInterval = 20
+    }
+        
+    return notificationTimeInterval
+}
+
+func scheduleNotification(Person: Person) {
+    //Requesting notification permission
+    let center = UNUserNotificationCenter.current()
+    center.requestAuthorization(options: [.alert, .badge, .sound]) {granted, error in
+        if let error = error {
+            print(error.localizedDescription)
+        }
+    }
+    
+    //getting notification permissions and settings
+    center.getNotificationSettings { settings in
+        guard settings.authorizationStatus == .authorized else {
+            return
+        }
+        let notificationTimeInterval = configureNotificationTime(Person: Person)
+        //Notification scheduling
+        addNotification(title: Person.name, body: "Go text \(Person.name), it´s been \(Int(notificationTimeInterval/60/60/24)) days", timeInterval: notificationTimeInterval)
+    }
+}

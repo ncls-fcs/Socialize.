@@ -36,7 +36,7 @@ struct friend_timerApp: App {
                             
                             print("Loading completed: ")
                             for person in personArrayFromFile {
-                                print(person)
+                                print(person.name)
                             }
                             
                             modelData.friends = personArrayFromFile

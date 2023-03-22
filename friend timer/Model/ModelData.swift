@@ -11,7 +11,7 @@ import Foundation
 import SwiftUI
 import Combine
 
-struct Person: Identifiable, Codable {
+class Person: Identifiable, Codable, ObservableObject {
     let id: UUID
     var name: String
     var lastContact: Date
@@ -84,7 +84,7 @@ func formatDate(date:Date) -> String {
                 locale: Locale(identifier: "en_GB"),
                 calendar: Calendar.current,
                 capitalizationContext: .beginningOfSentence)
-    
+    #warning("TODO: if relative time is under one minute display 'now' instead of seconds")
     return formatStyle.format(date)
 }
 

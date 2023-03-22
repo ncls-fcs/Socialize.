@@ -7,14 +7,14 @@
 
 import Foundation
 
-class NewPerson: ObservableObject {
-    @Published var newPersonName: String = ""
-    @Published var date: Date = Date.now
-    @Published var priority: Int = 0
+class NewPerson: Person {
+    //@Published var name: String = ""
+    //@Published var lastContact: Date = Date.now
+    //@Published var priority: Int = 0
     
     func clear() {
-        self.newPersonName = ""
-        self.date = Date.now
+        self.name = ""
+        self.lastContact = Date.now
         self.priority = 0
     }
 }

@@ -62,7 +62,7 @@ struct ContentView: View {
                 .sheet(isPresented: $isPresentingAddView) {
                     NavigationView {
                         AddNewPersonView(newPerson: newPerson)
-                            .navigationTitle($newPerson.newPersonName)
+                            .navigationTitle($newPerson.name)
                             .toolbar {
                                 ToolbarItem(placement: .cancellationAction) {
                                     Button("Cancel") {
@@ -72,35 +72,12 @@ struct ContentView: View {
                                 }
                                 ToolbarItem(placement: .confirmationAction) {
                                     Button("Add") {
-                                        addNewPerson(name: newPerson.newPersonName, lastContact: newPerson.date, priority: newPerson.priority)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
+                                        addNewPerson(name: newPerson.name, lastContact: newPerson.lastContact, priority: newPerson.priority)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
                                         
                                         isPresentingAddView = false
                                         
-                                        //Requesting notification permission
-                                        let center = UNUserNotificationCenter.current()
-                                        center.requestAuthorization(options: [.alert, .badge, .sound]) {granted, error in
-                                            if let error = error {
-                                                print(error.localizedDescription)
-                                            }
-                                        }
-                                        
-                                        //getting notification permissions and settings
-                                        center.getNotificationSettings { settings in
-                                            guard settings.authorizationStatus == .authorized else {
-                                                return
-                                            }
-                                            var notificationTimeInterval: Double
-                                            switch newPerson.priority {
-                                            case 0: notificationTimeInterval = 302400
-                                            case 1: notificationTimeInterval = 604800
-                                            case 2: notificationTimeInterval = 907200
-                                            default:
-                                                notificationTimeInterval = 20
-                                            }
-                                            //Notification scheduling
-                                            addNotification(title: newPerson.newPersonName, body: "Go meet with your mate, it´s been \(Int(notificationTimeInterval/604800)) weeks", timeInterval: notificationTimeInterval)
-                                        }
-  
+                                        scheduleNotification(Person: newPerson)
+      
                                         newPerson.clear()   //Gibt das Modell newPerson frei
                                     }
                                 }
