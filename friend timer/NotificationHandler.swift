@@ -31,9 +31,9 @@ func configureNotificationTime(Person: Person) -> Double{
     
     var notificationTimeInterval: Double
     switch Person.priority {
-    //case 0: notificationTimeInterval = 302400
-    //case 1: notificationTimeInterval = 604800
-    //case 2: notificationTimeInterval = 907200
+    case 0: notificationTimeInterval = 302400
+    case 1: notificationTimeInterval = 604800
+    case 2: notificationTimeInterval = 907200
     default:
         notificationTimeInterval = 20
     }
