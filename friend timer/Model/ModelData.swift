@@ -5,8 +5,6 @@
 //  Created by Nicolas Fuchs on 09.10.22.
 //
 
-#warning("TODO: Add Priority to Friends")
-
 import Foundation
 import SwiftUI
 import Combine

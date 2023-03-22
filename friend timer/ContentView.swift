@@ -5,8 +5,6 @@
 //  Created by Nicolas Fuchs on 09.10.22.
 //
 
-#warning("Implementation of refresher for time intervall of 'lastContact' needs to be changed to one where the original Person object gets altered and not deleted and a new one with the date set to now inserted")
-
 import SwiftUI
 
 struct ContentView: View {
