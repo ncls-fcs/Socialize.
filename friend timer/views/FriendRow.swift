@@ -14,6 +14,8 @@ struct FriendRow: View {
     
     @EnvironmentObject var modelData: ModelData
     
+    //@EnvironmentObject var editMode: EnvironmentObject
+    
     @StateObject var lastContactTimer = UpdaterViewModel() //Updates View every 60 second
     
     func setLastContactToNow(id: UUID) {
@@ -52,6 +54,7 @@ struct FriendRow: View {
             }
         }
         .accentColor(/*@START_MENU_TOKEN@*/.black/*@END_MENU_TOKEN@*/)
+        
         .alert("Reset timer?", isPresented: $showAlert) {
             Button("No"){
                 

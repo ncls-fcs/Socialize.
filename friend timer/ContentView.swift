@@ -10,12 +10,11 @@ import SwiftUI
 struct ContentView: View {
     
     @EnvironmentObject var modelData: ModelData
-    
-    @ObservedObject var newPerson: NewPerson = NewPerson()
-    
+        
     @State private var isPresentingAddView = false
     
     @Environment(\.scenePhase) private var scenePhase   //operational State of the app gets saved to scenePhase from @Environment Property
+    @Environment(\.editMode) var editMode   //
     
     let saveAction: () -> Void
     
@@ -23,13 +22,7 @@ struct ContentView: View {
         modelData.friends.remove(atOffsets: offsets)
     }
     
-    func addNewPerson(name:String, lastContact:Date = Date.now, priority:Int) {
-        //add a new friend struct with a given name and given date; if no date is provided it uses the current date
-        modelData.friends.append(Person(name:name, lastContact:lastContact, priority:priority))
-        modelData.friends.sort {
-            $0.lastContact < $1.lastContact
-        }
-    }
+    
 
     
     var body: some View {
@@ -41,47 +34,28 @@ struct ContentView: View {
                 List {
                     ForEach(modelData.friends) {
                         friend in FriendRow(friend: friend)
+                            .environment(editMode)
                     }
                     .onDelete(perform: delete)
+                    
                 }
-                    .navigationTitle("Last met")
                     .toolbar {
-                    EditButton()
-                    Spacer()
-                    Button(action: {
-                        isPresentingAddView = true
-                    }){
-                        Image(systemName: "plus")
+                        EditButton()
+                        Spacer()
+                        Button(action: {
+                            isPresentingAddView = true
+                        }){
+                            Image(systemName: "plus")
+                        }
+                        Spacer()
                     }
-                    Spacer()
-                }
-                
+                .navigationTitle("Last met")
+
                 
                 .sheet(isPresented: $isPresentingAddView) {
-                    NavigationView {
-                        AddNewPersonView(newPerson: newPerson)
-                            .navigationTitle($newPerson.name)
-                            .toolbar {
-                                ToolbarItem(placement: .cancellationAction) {
-                                    Button("Cancel") {
-                                        newPerson.clear()
-                                        isPresentingAddView = false
-                                    }
-                                }
-                                ToolbarItem(placement: .confirmationAction) {
-                                    Button("Add") {
-                                        addNewPerson(name: newPerson.name, lastContact: newPerson.lastContact, priority: newPerson.priority)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
-                                        
-                                        isPresentingAddView = false
-                                        
-                                        scheduleNotification(Person: newPerson)
-      
-                                        newPerson.clear()   //Gibt das Modell newPerson frei
-                                    }
-                                }
-                            }
-                    }
+                    AddNewPersonSheet(isPresentingAddView: $isPresentingAddView)
                 }
+                #warning("TODO: Need to be able to edit Persons in List. Currently generalising AddNewPersonSheet and AddNewPersonView to be able to handle adding new Person AND editing existing Person. Then if in editMode and user clicks on Person in List, AddNewPersonSheet must be displayed with clicked on Person loaded")
             }
             .onChange(of: scenePhase) { phase in
                 if phase == .inactive {
