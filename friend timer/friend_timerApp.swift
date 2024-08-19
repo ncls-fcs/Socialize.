@@ -9,25 +9,14 @@ import SwiftUI
 
 @main
 struct friend_timerApp: App {
-    @StateObject private var modelData = ModelData()
-    
-    
-    
+    @State private var modelData = ModelData()
+       
     var body: some Scene {
         WindowGroup {
-            ContentView(){
-                ModelData.save(friends: modelData.friends) { result in
-                    switch result {
-                    case .failure(let error):
-                        fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
-                    case .success(let savedPersonCount):
-                        print("Saved "+String(savedPersonCount)+" Entities to file")
-                    }
-                }
-            }
-                .environmentObject(modelData)
-                .onAppear{
-                    ModelData.load { result in
+            ContentView()
+                .environment(modelData)
+                .onAppear(perform: {
+                    ModelData.loadFromDisk { result in
                         switch result {
                         case .failure(let error):
                             fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
@@ -41,7 +30,7 @@ struct friend_timerApp: App {
                             modelData.friends = personArrayFromFile
                         }
                     }
-                }
+                })
         }
     }
 }

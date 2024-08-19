@@ -9,15 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @EnvironmentObject var modelData: ModelData
+    @Environment(ModelData.self) private var modelData
     
     @ObservedObject var newPerson: NewPerson = NewPerson()
     
     @State private var isPresentingAddView = false
+    @State private var importing = false
+    @State private var errorOccured = false
+    @State private var details: Error?
     
     @Environment(\.scenePhase) private var scenePhase   //operational State of the app gets saved to scenePhase from @Environment Property
-    
-    let saveAction: () -> Void
     
     func delete(at offsets: IndexSet) {
         modelData.friends.remove(atOffsets: offsets)
@@ -28,6 +29,35 @@ struct ContentView: View {
         modelData.friends.append(Person(name:name, lastContact:lastContact, priority:priority))
         modelData.friends.sort {
             $0.lastContact < $1.lastContact
+        }
+    }
+    
+    func loadFromDisk() {
+        ModelData.loadFromDisk { result in
+            switch result {
+            case .failure(let error):
+                fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
+            case .success(let personArrayFromFile):
+                
+                print("Loading completed: ")
+                for person in personArrayFromFile {
+                    print(person.name)
+                }
+                DispatchQueue.main.async {
+                    self.modelData.friends = personArrayFromFile
+                }
+            }
+        }
+    }
+    
+    func saveToDisk() {
+        ModelData.save(friends: modelData.friends) { result in
+            switch result {
+            case .failure(let error):
+                fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
+            case .success(let savedPersonCount):
+                print("Saved "+String(savedPersonCount)+" Entities to file")
+            }
         }
     }
 
@@ -44,19 +74,61 @@ struct ContentView: View {
                     }
                     .onDelete(perform: delete)
                 }
+                .refreshable {
+                    loadFromDisk()
+                }
                     .navigationTitle("Last met")
                     .toolbar {
-                    EditButton()
-                    Spacer()
-                    Button(action: {
-                        isPresentingAddView = true
-                    }){
-                        Image(systemName: "plus")
+                        // Import Data
+                        Button(action: {
+                            importing = true
+                        }){
+                            Image(systemName: "square.and.arrow.down")
+                        }
+                        .fileImporter(
+                            isPresented: $importing,
+                            allowedContentTypes: [.json]
+                        ) { result in
+                            switch result {
+                            case .success(let files):
+                                ModelData.load(fileURL: files) { result in
+                                    switch result {
+                                    case .failure(let error):
+                                        details = error
+                                        errorOccured = true
+                                    case .success(let personArrayFromFile):
+                                        modelData.friends = personArrayFromFile
+                                    }
+                                }
+                            case .failure(let error):
+                                details = error
+                                errorOccured = true
+                            }
+                        }
+                        .alert(
+                            "Failure Importing",
+                            isPresented: $errorOccured,
+                            presenting: details
+                        ) { details in }
+                        message: { details in
+                            Text(details.localizedDescription)
+                        }
+                        
+                        // Export Data
+                        ShareLink(item: modelData.friends, preview: SharePreview("Backup Data"))
+                        Spacer()
+                        EditButton()
+                        Spacer()
+                        
+                        // Add new Friend to List
+                        Button(action: {
+                            isPresentingAddView = true
+                        }){
+                            Image(systemName: "plus")
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
-                
-                
                 .sheet(isPresented: $isPresentingAddView) {
                     NavigationView {
                         AddNewPersonView(newPerson: newPerson)
@@ -77,6 +149,8 @@ struct ContentView: View {
                                         scheduleNotification(Person: newPerson)
       
                                         newPerson.clear()   //Gibt das Modell newPerson frei
+                                        
+                                        saveToDisk()
                                     }
                                 }
                             }
@@ -85,16 +159,16 @@ struct ContentView: View {
             }
             .onChange(of: scenePhase) { phase in
                 if phase == .inactive {
-                    saveAction()
+                    saveToDisk()
                 }
             }
         }
     }
-}
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(saveAction:{})
+        ContentView()
             .environmentObject(ModelData())
     }
 }
